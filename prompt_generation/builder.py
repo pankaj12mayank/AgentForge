@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from prompt_generation.ollama_client import chat_completion, load_canonical_structure
+from prompt_generation.llm_client import generate_chat_completion, load_canonical_structure
 
 
 @dataclass
@@ -56,4 +56,4 @@ async def generate_master_prompt(rough: RoughInput) -> str:
         rough.to_user_block()
         + "\n\nGenerate the full master prompt Markdown now, following all CRITICAL RULES."
     )
-    return await chat_completion(system, user, temperature=0.15)
+    return await generate_chat_completion(system, user, temperature=0.15)

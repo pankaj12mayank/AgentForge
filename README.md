@@ -1,517 +1,276 @@
----
-
-# Prompt Generation (Local Setup Guide)
+# AgentForge
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
-![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-orange)
+![LLM](https://img.shields.io/badge/LLM-Gemini%20%7C%20OpenAI%20%7C%20Groq%20%7C%20OpenRouter-orange)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-A local web application that converts rough project notes into a structured **Master Agent Prompt (BRD/FRD style)** using **Ollama**.
-No paid APIs required. Everything runs locally.
+A sleek, responsive web application that turns structured project notes into a **Master Agent Prompt (BRD/FRD style)** using any cloud or local LLM Provider (Google Gemini, OpenAI, Groq, OpenRouter, or Custom OpenAI-Compatible APIs).
+
+**Powered by SSP** — AgentForge Engine runs on the SSP platform stack.
 
 ---
 
 ## Features
 
-* Converts unstructured notes into structured prompts
-* Fully local (no external API calls)
-* Simple web UI
-* FastAPI backend
-* Docker support
+* **Multi-Provider Support**: Connect to Google Gemini, OpenAI, Groq, OpenRouter, or any OpenAI-compatible API endpoint.
+* **Dynamic Model Fetching**: Click **Fetch Models** to query your provider's endpoint for all available models, then select your preferred model from the dropdown.
+* **Persistent Settings**: Base URL, Model Name, and API Key stored locally in SQLite (`data/config.sqlite`).
+* **API Key Encryption & Masking**: API Keys are encrypted at rest (Fernet) and masked (`sk-...1234` / `AIza...WXYZ`) with an interactive **Show / Hide Eye toggle**.
+* **Live Connection Testing**: Test provider API keys and endpoints directly from the UI before saving.
+* **Master Prompt Generation**: High-fidelity system prompt output structured with Role, Goal, Process Steps, Review Checklist, and Output Format.
+* **Prompt Library & Versioning**: Save prompts, track version families, compare versions with the Diff engine, and export to Markdown / JSON / YAML / LangChain / CrewAI.
+* **Multi-Agent Orchestrator**: Generate a coordinated 3-agent (Architect / Developer / QA) prompt suite.
+* **FastAPI + Modern Tailwind UI**: Clean dark mode design with micro-animations and copy-to-clipboard functionality.
+* **Native App Window**: Desktop and installed versions open in their own native window via WebView2 (same full-width UI, no browser tab); falls back to the browser automatically if WebView2 is unavailable.
+* **Toast Notifications**: Every success and error action across the app (sign in, sign up, generate, save, settings, library, export) surfaces as a themed slide-in toast with a progress bar — no scattered inline status text.
+* **PWA (Progressive Web App)**: Installable on Android/iOS home screen via `manifest.webmanifest` + service worker + generated icons.
+* **Windows EXE + Installer**: Build a standalone `AgentForge.exe` (PyInstaller) and an Inno Setup installer.
 
 ---
 
-## Prerequisites
+## Prerequisites & Requirements
 
-Make sure you have:
+Make sure you have installed all dependencies listed in `requirements.txt`:
 
-* Python 3.11+
-* Ollama installed and running
-
-### Install Ollama model
-
-```bash
-ollama pull llama3:latest
-```
+* **Python 3.11+**
+* Dependencies (`requirements.txt`):
+  * `fastapi`
+  * `uvicorn[standard]`
+  * `httpx`
+  * `jinja2`
+  * `python-dotenv`
+* An API Key for your preferred provider:
+  * [Google Gemini API Key](https://aistudio.google.com/app/apikey) *(Recommended - Free Tier Available)*
+  * [Groq API Key](https://console.groq.com/keys)
+  * [OpenAI API Key](https://platform.openai.com/api-keys)
+  * [OpenRouter API Key](https://openrouter.ai/keys)
 
 ---
 
-## Installation
+## How to Run the Project
 
-### 1. Clone the repository
+### 1. Clone & Navigate to Project Directory
 
 ```bash
-git clone <your-repo-url>
+git clone <repo-url>
 cd Prompt_generation
 ```
 
----
+### 2. Create & Activate Virtual Environment
 
-### 2. Create virtual environment
-
-```bash
+**Windows:**
+```powershell
 python -m venv .venv
+.\.venv\Scripts\activate
 ```
 
-Activate it:
-
-**Windows**
-
+**Mac / Linux:**
 ```bash
-.venv\Scripts\activate
-```
-
-**Mac/Linux**
-
-```bash
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
----
-
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+### 4. Start the Application Server
 
-### 4. Setup environment variables
-
-```bash
-copy .env.example .env
-```
-
-Default configuration:
-
-```env
-PORT=8765
-OLLAMA_MODEL=llama3:latest
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-```
-
----
-
-## Running the Application
-
-### Option 1 (Windows)
-
-```bash
-run_prompt_generation.bat
-```
-
----
-
-### Option 2 (Manual)
+Run the launcher script:
 
 ```bash
 python launch.py
 ```
 
----
-
-## Access the App
-
-Open in browser:
-
-```
-http://127.0.0.1:8765
-```
+The app opens in its own **native app window** (same design, no browser chrome). Use
+`python launch.py --browser` to open in the system browser instead, or
+`python launch.py --no-browser` to start the server silently without any window.
 
 ---
 
-## Usage
+## Windows App & Installer
 
-1. Enter:
+Anyone can get AgentForge on Windows by downloading and running the setup file.
+After installation, AgentForge opens in its own **native app window** (powered by
+WebView2) — exactly the same full-width dark interface, just without a browser tab.
 
-   * Project Title
-   * Business Objective
-   * Features / Notes
+### 1. Build the end-user installer (requires Inno Setup 6)
 
-2. Click **Generate Master Prompt**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build_installer.ps1
+```
 
-3. Copy the generated Markdown
+This builds the app and wraps it in a complete installer. The final deliverable is:
 
-4. Use it in your AI workflow
+```text
+dist\installer\AgentForge-Setup.exe
+```
+
+Users simply **download → run → Next → Finish**, and AgentForge opens in its own
+window. The installer includes:
+
+* Wizard with welcome + MIT license agreement
+* Start Menu icons and an Uninstall entry
+* Optional desktop shortcut
+* Optional "start when I sign in" (auto-starts with `--no-browser`)
+* A full uninstaller
+
+> Note: an unsigned installer may trigger Windows SmartScreen ("Windows protected your PC").
+> Click **More info → Run anyway**, or purchase a code-signing certificate (OV/EV, paid).
+> On first launch the app looks for the system's WebView2 runtime (pre-installed on
+> Windows 10 1903+ / Windows 11); if it is missing the app automatically falls back to
+> opening your system browser.
 
 ---
 
-## API Endpoints
+## PWA (Install on Mobile & Desktop Browser)
 
-### Health Check
+The app also runs as a PWA for browsers that support it. It serves
+`/manifest.webmanifest`, `/sw.js`, and PWA icons
+(`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`).
 
-```http
-GET /api/health
-```
-
----
-
-### Generate Prompt
-
-```http
-POST /api/generate
-```
-
-#### Request Body
-
-```json
-{
-  "project_title": "Test Project",
-  "business_objective": "Testing generation",
-  "core_features": "Feature 1",
-  "additional_notes": "Note"
-}
-```
+* **Android**: open the app in Chrome → menu → **Install app**.
+* **iOS**: open in Safari → Share → **Add to Home Screen**.
+* **Windows**: Chrome/Edge → the install icon in the address bar → **Install**.
+* Mobile install generally requires **HTTPS**: use a tunnel (ngrok/cloudflare) or a reverse
+  proxy with a valid certificate; `http://localhost` also works during local testing.
+* Service workers are network-first for `/api/*` so no stale responses or cached secrets are served offline.
 
 ---
 
-## Docker Setup (Optional)
+## Configuring Your LLM Provider in the UI
 
-### Build image
-
-```bash
-docker build -t prompt-gen .
-```
-
----
-
-### Run container
-
-```bash
-docker run -p 8765:8765 \
--e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
-prompt-gen
-```
+1. Open `http://127.0.0.1:8765` in your browser.
+2. Click the **LLM Provider** button in the header.
+3. Select a **Provider Preset** (or enter a custom Base URL).
+4. Enter your **API Key** (use the eye icon to toggle visibility).
+5. Click **Fetch Models** to automatically load all available models from that provider into the dropdown menu.
+6. Select your desired model from the dropdown (or type it manually).
+7. Click **Test Connection** to verify your setup.
+8. Click **Save Settings**. Your API key will now be stored masked and encrypted locally!
 
 ---
 
 ## Project Structure
 
-```
+```text
 Prompt_generation/
 │
-├── launch.py              # Entry point
-├── builder.py            # Prompt generation logic
+├── launch.py                  # Server launcher (auto-picks free port)
 ├── pg_ui/
-│   └── app.py            # FastAPI backend
-├── templates/
-│   └── index.html        # UI
-├── requirements.txt
-├── .env
-└── run_prompt_generation.bat
+│   ├── app.py                # FastAPI backend, auth middleware & API routes
+│   ├── static/               # favicon/.ico, manifest.webmanifest, sw.js, PWA icons
+│   └── templates/
+│       ├── index.html        # Responsive Tailwind UI & Provider Modal (toast notifications)
+│       ├── login.html        # Themed Sign In page (multi-user / password modes)
+│       └── signup.html       # Themed account registration page
+├── prompt_generation/
+│   ├── builder.py            # Prompt builder logic
+│   ├── config.py             # Server configuration (PORT / HOST / auth / writable dir)
+│   ├── db.py                 # SQLite database, key encryption & masking
+│   ├── llm_client.py         # Universal OpenAI-compatible LLM client (w/ retry + SSRF guard)
+│   ├── orchestrator.py       # Multi-agent suite generator
+│   ├── diff_engine.py        # Prompt version diff engine
+│   ├── exporter.py           # Multi-format export (Markdown/JSON/YAML/LangChain/CrewAI)
+│   └── ratelimit.py          # In-memory rate limiting for sensitive routes
+├── tests/                    # pytest test suite (run with `pip install -r requirements.txt`)
+├── scripts/
+│   ├── build_exe.ps1         # PyInstaller onefile build for dist\AgentForge.exe
+│   └── build_installer.ps1   # One-click: build exe + wrap in AgentForge-Setup.exe
+├── installer/
+│   ├── AgentForge.iss        # Inno Setup installer recipe (full end-user installer)
+│   └── LICENSE.txt           # MIT license shown on the installer's license page
+├── tools/
+│   └── make_icons.py         # Generates favicon/PWA icons from the CPU logo (Pillow)
+├── data/
+│   ├── config.sqlite         # Local SQLite settings database (gitignored)
+│   └── canonical_prompt_structure.md
+├── requirements.txt          # Everything: runtime + icon tooling + dev/test deps
+├── Dockerfile                # Server deployment (auto-installs requirements.txt)
+└── .env
 ```
 
 ---
 
-## Configuration
+## Security Notes
 
-| Variable        | Description       | Default                                          |
-| --------------- | ----------------- | ------------------------------------------------ |
-| PORT            | App port          | 8765                                             |
-| OLLAMA_MODEL    | Model name        | llama3:latest                                    |
-| OLLAMA_BASE_URL | Ollama server URL | [http://127.0.0.1:11434](http://127.0.0.1:11434) |
+* The app **binds to `127.0.0.1` by default** (`HOST` in `.env`). Set `HOST=0.0.0.0` **only** if you explicitly need LAN access.
+* API keys are **encrypted at rest** using `cryptography` (Fernet) with a machine-local key in `data/.secret_key`. The legacy SQLite stores were plaintext; existing keys remain readable and are re-encrypted on the next settings save.
+* **Per-user data isolation**: prompts are scoped to the signed-in account and the
+  isolation is enforced in the database layer (not just the UI) — an account can
+  never list, read, version, diff or delete another account's prompts. APIs to
+  another user's prompt simply behave like a missing record.
+* **No data auto-deletion**: prompts and their full date/time history stay until
+  the owning user deletes them. Updating the app or uninstalling it **never**
+  touches runtime data — everything lives in `data/config.sqlite` next to the app
+  (e.g. `%LOCALAPPDATA%\Programs\AgentForge\data`), outside the installer's file list.
+* **Login required everywhere**: auth is **ON by default** — local, installed, or deployed,
+  the app opens on a themed **Sign In** page and visitors **register their own account**
+  (username + password, PBKDF2-hashed, stored in `data/config.sqlite`) before use. Sessions use
+  an HTTP-only signed cookie (30 days) with a **Sign Out** button in the header, and the whole
+  app (UI, `/api/*`, static assets) is protected.
+* **Switch modes via `.env`**: set `APP_AUTH_TOKEN=<password>` for a single shared password mode
+  (the same value also works as `Authorization: Bearer <token>` for API clients), or
+  `APP_AUTH_USERS=1` to keep the default multi-user registration + login. Set `APP_AUTH_OFF=1`
+  to disable login entirely for rapid local debugging.
+* Costly routes (`/api/generate`, `/api/orchestrate`, `/api/models/fetch`, `/api/settings/test`) are rate-limited in memory (20 requests / 60s per IP).
+* `/api/health` performs **no** LLM calls, so it is safe to poll from the UI.
+* **SSRF guard**: API keys are sent only to public hosts; connecting to private/LAN
+  addresses is blocked unless you set `AGENTFORGE_ALLOW_LOCAL_LLM=1` (e.g. a LAN Ollama/LM Studio server).
+* **XSS hardening**: user/LLM-supplied text rendered into library and orchestrator cards is HTML-escaped in the UI.
 
 ---
 
-## Troubleshooting
-
-### App opens wrong UI
-
-* Stop all running terminals
-* Restart:
+## Running Tests
 
 ```bash
-python launch.py
+pip install -r requirements.txt
+python -m pytest tests -q
 ```
 
 ---
 
-### Ollama not responding
+## API Endpoints
 
-```bash
-curl http://127.0.0.1:11434
+### Get Provider Settings
+```http
+GET /api/settings
+```
+
+### Save Provider Settings
+```http
+POST /api/settings
+```
+
+### Fetch Available Models
+```http
+POST /api/models/fetch
+```
+
+### Test Connection
+```http
+POST /api/settings/test
+```
+
+### Generate Master Prompt
+```http
+POST /api/generate
 ```
 
 ---
 
-### Port already in use
+## Deployment (Free → Paid)
 
-Update `.env`:
-
-```env
-PORT=9000
-```
-
----
-
-## Quick Start
-
-```text
-1. Install Python + Ollama
-2. Pull model (llama3)
-3. Setup virtual environment
-4. Install dependencies
-5. Run the app
-6. Open browser and generate prompt
-```
-
----
-
-## Verification Steps
-
-1. Start Ollama:
-
-```bash
-ollama serve
-```
-
-2. Run app:
-
-```bash
-python launch.py
-```
-
-3. Open:
-
-```
-http://localhost:8765/
-```
-
-4. Generate a prompt and test the copy button
-
----
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first.
+Need to host AgentForge online? See **[DEPLOYMENT.md](DEPLOYMENT.md)** — a complete
+guide covering **free tiers** (Render, Oracle Cloud "Always Free"), **cheap paid
+VPS** hosting (DigitalOcean / Hostinger), Docker + Caddy HTTPS, persistent-data
+backups, and the production security checklist.
 
 ---
 
 ## License
 
 This project is licensed under the MIT License.
-
----
-
-Here’s an **enhanced GitHub README add-on** with all the sections you asked for. You can paste this below your existing README.
-
----
-
-## Screenshots
-
-> Add your screenshots inside a `/docs/images` folder in your repo.
-
-### Home Screen
-
-![Home UI](docs/images/home.png)
-
-### Generated Prompt Output
-
-![Generated Output](docs/images/output.png)
-
-### Copy Success State
-
-![Copy State](docs/images/copy.png)
-
----
-
-## Demo GIF
-
-> Place your demo GIF inside `/docs/demo.gif`
-
-![Demo](docs/demo.gif)
-
-**Tip to create GIF:**
-
-* Use tools like:
-
-  * ScreenToGif (Windows)
-  * Kap (Mac)
-* Keep it under 10–15 seconds for GitHub performance
-
----
-
-## Architecture Diagram
-
-```text
-User (Browser)
-     │
-     ▼
-Frontend (HTML UI - templates/index.html)
-     │
-     ▼
-FastAPI Backend (pg_ui/app.py)
-     │
-     ▼
-Prompt Builder (builder.py)
-     │
-     ▼
-Ollama API (localhost:11434)
-     │
-     ▼
-LLM Model (llama3)
-```
-
----
-
-### Optional (Better Visual Diagram)
-
-You can generate a diagram using tools like:
-
-* draw.io
-* Excalidraw
-* Whimsical
-
-Save it as:
-
-```
-docs/images/architecture.png
-```
-
-Then embed:
-
-```md
-![Architecture](docs/images/architecture.png)
-```
-
----
-
-## Deployment
-
-### Option 1: Render (Quick Cloud Deployment)
-
-1. Push code to GitHub
-2. Go to [https://render.com](https://render.com)
-3. Create **Web Service**
-4. Configure:
-
-* Build Command:
-
-```bash
-pip install -r requirements.txt
-```
-
-* Start Command:
-
-```bash
-python launch.py
-```
-
-* Environment Variables:
-
-```
-OLLAMA_BASE_URL=<your-ollama-server>
-PORT=8765
-```
-
-Important:
-
-* Render does NOT support local Ollama directly
-* You must host Ollama separately (EC2 recommended)
-
----
-
-### Option 2: AWS EC2 (Recommended for Ollama)
-
-#### Step 1: Launch EC2
-
-* Ubuntu 22.04
-* t3.large or higher (for LLM performance)
-
----
-
-#### Step 2: Install Ollama
-
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-ollama serve
-ollama pull llama3
-```
-
----
-
-#### Step 3: Run App
-
-```bash
-git clone <repo>
-cd Prompt_generation
-
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-python launch.py
-```
-
----
-
-#### Step 4: Open Ports
-
-Allow in security group:
-
-* 8765 (App)
-* 11434 (Ollama)
-
----
-
-#### Step 5: Update `.env`
-
-```env
-OLLAMA_BASE_URL=http://<EC2-IP>:11434
-```
-
----
-
-### Option 3: Internal Tool (Company Use)
-
-Best setup:
-
-* Backend: EC2 / Internal VM
-* Ollama: Same machine or GPU server
-* Access: VPN / Internal Network
-
-Flow:
-
-```text
-Employee → Internal URL → FastAPI → Ollama → Response
-```
-
----
-
-## Production Improvements (Recommended)
-
-* Add Nginx reverse proxy
-* Use systemd to run app as service
-* Add authentication (basic auth / SSO)
-* Enable HTTPS
-
----
-
-## Folder Structure for Assets
-
-```text
-docs/
-│
-├── images/
-│   ├── home.png
-│   ├── output.png
-│   ├── copy.png
-│   └── architecture.png
-│
-└── demo.gif
-```
-
----
-
-## Pro Tips
-
-* Keep screenshots lightweight (<500KB)
-* Use consistent resolution
-* Blur sensitive data before uploading
-* Use dark/light mode consistently
-
-
-
-

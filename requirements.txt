@@ -1,5 +1,14 @@
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-httpx>=0.26.0
-jinja2>=3.1.0
-python-dotenv>=1.0.0
+# AgentForge — runtime dependencies
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+httpx==0.28.1
+jinja2==3.1.6
+python-dotenv==1.2.3
+cryptography==50.0.1
+pywebview==6.2.1
+
+# Icon generation (python tools/make_icons.py)
+pillow==12.3.0
+
+# Development / testing
+pytest==9.1.1

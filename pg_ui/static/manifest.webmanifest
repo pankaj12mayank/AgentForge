@@ -1,0 +1,17 @@
+{
+  "name": "AgentForge",
+  "short_name": "AgentForge",
+  "description": "Architect enterprise-grade system prompts & orchestrate AI agent teams.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060811",
+  "theme_color": "#3b82f6",
+  "lang": "en",
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In | AgentForge</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="icon" href="/favicon.ico">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] } } }
+    };
+  </script>
+
+  <style>
+    body { font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, sans-serif; background-color: #060811; color: #e2e8f0; overflow-x: hidden; }
+    .bg-mesh {
+      background-image:
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(147, 51, 234, 0.12) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+    }
+    .glossy-card {
+      background: linear-gradient(145deg, rgba(30, 41, 74, 0.85), rgba(15, 23, 42, 0.95));
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .shimmer-bg::after {
+      content: '';
+      position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+      transform: translateX(-100%); animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .toast-animate-in { animation: toastIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards; }
+    .toast-animate-out { animation: toastOut 0.25s ease-in forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(24px); } }
+    input[type='password']::-ms-reveal,
+    input[type='password']::-ms-clear,
+    input[type='password']::-webkit-credentials-auto-fill-button { display: none; }
+  </style>
+</head>
+<body class="min-h-screen bg-mesh flex items-center justify-center p-4 relative overflow-hidden">
+
+  <div class="w-full max-w-md">
+    <div class="glossy-card relative overflow-hidden rounded-3xl p-8 sm:p-10 border border-slate-700/80 shimmer-bg">
+
+      <div class="flex justify-center mb-6">
+        <img src="/static/favicon.svg" alt="AgentForge logo" width="72" height="72"
+          class="w-[72px] h-[72px] rounded-2xl shadow-xl shadow-brand-500/30 border border-white/10" />
+      </div>
+
+      <h1 class="text-2xl font-extrabold text-center text-slate-100 mb-1">Welcome back</h1>
+      <p class="text-sm text-center text-slate-400 mb-8">Sign in to AgentForge to continue</p>
+
+      <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+      <form id="login-form" class="space-y-4" autocomplete="on">
+        {% if mode == 'users' %}
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Username</label>
+          <input type="text" id="username" required placeholder="e.g. dev_user" autocomplete="username"
+            class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:ring-2 focus:ring-brand-500/60" />
+        </div>
+        {% endif %}
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Password</label>
+          <div class="relative">
+            <input type="password" id="password" required placeholder="{% if mode == 'users' %}Your password{% else %}Enter the app password{% endif %}" autofocus autocomplete="current-password"
+              class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-4 pr-11 py-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:ring-2 focus:ring-brand-500/60" />
+            <button type="button" id="toggle-pass" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1">
+              <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="login-btn"
+          class="shimmer-bg relative overflow-hidden w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 via-blue-600 to-indigo-600 hover:from-brand-500 text-white font-bold shadow-xl shadow-brand-500/25 border border-white/10 active:scale-[0.98] transition-all">
+          <span id="login-btn-label">Sign In</span>
+        </button>
+      </form>
+
+{% if mode == 'users' %}
+      <p class="text-xs text-center text-slate-400 mt-6">
+        No account yet?
+        <a href="/signup" class="text-brand-400 font-bold hover:text-brand-300">Create one here</a>
+      </p>
+      <p class="text-xs text-center text-slate-500 mt-3">Your data stays on this server. All settings and prompts are stored here.</p>
+      {% else %}
+      <p class="text-xs text-center text-slate-500 mt-6">Your data stays on this server. All settings and prompts are stored locally here.</p>
+      {% endif %}
+      <p class="text-center text-[11px] text-slate-600 mt-4 border-t border-slate-800/60 pt-4">AgentForge Engine &middot; Powered by <span class="font-semibold text-slate-500">SSP</span></p>
+    </div>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggle-pass');
+    const eyeIcon = document.getElementById('eye-icon');
+    const passInput = document.getElementById('password');
+    toggleBtn.addEventListener('click', () => {
+      const show = passInput.type === 'password';
+      passInput.type = show ? 'text' : 'password';
+      eyeIcon.innerHTML = show
+        ? '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c6.5 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/>'
+        : '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+    });
+
+    const form = document.getElementById('login-form');
+    const btn = document.getElementById('login-btn');
+    const btnLabel = document.getElementById('login-btn-label');
+
+    function showToast(message, type = 'error', duration = 4500) {
+      const container = document.getElementById('toast-container');
+      const t = {
+        error: { fg: 'text-rose-300', bar: 'bg-rose-400', icon: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>' },
+        success: { fg: 'text-emerald-300', bar: 'bg-emerald-400', icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>' },
+        info: { fg: 'text-brand-300', bar: 'bg-brand-400', icon: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>' },
+      }[type] || { fg: 'text-brand-300', bar: 'bg-brand-400', icon: '' };
+      const ct = type === 'success' ? 'border-emerald-500/40' : (type === 'error' ? 'border-rose-500/40' : 'border-brand-500/40');
+      const toast = document.createElement('div');
+      toast.className = `toast-animate-in glossy-card rounded-2xl p-4 border shadow-2xl flex items-start gap-3 relative overflow-hidden bg-slate-900/95 ${ct}`;
+      toast.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5 ' + t.fg + '">' + t.icon + '</svg>' +
+        '<p class="text-xs font-semibold text-slate-100 flex-1">' + message + '</p>' +
+        '<button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white p-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '<div class="absolute bottom-0 left-0 h-1 ' + t.bar + ' transition-all ease-linear" style="width:100%; transition-duration:' + duration + 'ms;"></div>';
+      container.appendChild(toast);
+      const bar = toast.querySelector('.absolute');
+      setTimeout(() => { bar.style.width = '0%'; }, 50);
+      setTimeout(() => { toast.classList.add('toast-animate-out'); setTimeout(() => toast.remove(), 300); }, duration);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btnLabel.textContent = 'Signing in...';
+      const payload = { password: document.getElementById('password').value };
+      const usernameEl = document.getElementById('username');
+      if (usernameEl) payload.username = usernameEl.value.trim();
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+        showToast((data && data.detail) || 'Could not sign in.', 'error');
+      } catch (err) {
+        showToast('Network error. Is the server running?', 'error');
+      } finally {
+        btn.disabled = false;
+        btnLabel.textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+</html>

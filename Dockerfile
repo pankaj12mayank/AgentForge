@@ -8,7 +8,8 @@ COPY . .
 
 ARG APP_PORT=8765
 ENV PORT=${APP_PORT}
-ENV OLLAMA_BASE_URL=http://host.docker.internal:11434
+ENV HOST=0.0.0.0
+ENV PROMPT_GEN_NO_BROWSER=1
 EXPOSE ${APP_PORT}
 
 CMD ["python", "launch.py"]
