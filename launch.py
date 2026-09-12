@@ -17,6 +17,7 @@ to opening the system browser.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import socket
 import sys
@@ -173,7 +174,7 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     if args["no_browser"]:
-        server.run(sockets=[sock])
+        _serve(server, sock)
         return
 
     # Native window first (default). The uvicorn server runs in the background
@@ -198,7 +199,19 @@ def main(argv: list[str] | None = None) -> None:
     if not args["no_browser"]:
         _maybe_open_browser(url)
 
-    server.run(sockets=[sock])
+    _serve(server, sock)
+
+
+def _serve(server: uvicorn.Server, sock: socket.socket) -> None:
+    """Run uvicorn on the main thread; translate Ctrl+C / cancellation into a
+    clean message instead of Python 3.11's raw KeyboardInterrupt traceback."""
+    try:
+        server.run(sockets=[sock])
+    except KeyboardInterrupt:
+        pass
+    except asyncio.CancelledError:
+        pass
+    print("\nAgentForge stopped. Goodbye!")
 
 
 def _native_window_available() -> bool:
